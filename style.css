@@ -1,0 +1,114 @@
+#cards {
+  display: flex;
+  flex-wrap: wrap;
+  width: 85%; /* 新增：寬度和標頭一致 */
+  margin: 0 auto; /* 新增：置中 */
+}
+
+.card {
+  /* 卡片在容器裡的排版 */
+  /* 用正常方式計算長寬，padding與border都會算進來 */
+  box-sizing: border-box;
+  /* flex-basis, flex-grow, flex-shrink */
+  flex: 7% 1 1;
+  height: 8vw;
+  border: 2px solid #e0e0e0;
+  margin: 2px;
+
+  /* 卡片內部元素的排版 */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.card img {
+  max-width: 30%;
+  align-self: center;
+}
+
+.card p {
+  margin: 3px;
+  font-size: 10px;
+}
+
+.card p:last-child {
+  transform: rotate(180deg);
+}
+
+.back {
+  background: url('https://assets-lighthouse.alphacamp.co/uploads/image/file/9222/ExportedContentImage_00.png');
+  background-size: cover;
+}
+
+.paired {
+  background-color: #696b6d;
+}
+
+#header {
+  display: flex;
+  margin: 0 auto;
+  flex-direction: column;
+  align-items: flex-end;
+  width: 85%;
+}
+
+#header .title {
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+}
+
+#header .title img {
+  max-width: 3em;
+}
+
+#header .title h2 {
+  padding-left: 0.5em;
+}
+
+#header .score {
+  margin: 0;
+  color: #6c90ac;
+}
+
+#header .tried {
+  margin-top: 0;
+}
+
+.wrong {
+  /* 用哪個動畫、每次時間多長 */
+  animation: wrongAnimation 0.2s;
+  /* 動畫要重複幾次 */
+  animation-iteration-count: 5;
+}
+
+/* 做卡片邊框閃爍的動畫 */
+@keyframes wrongAnimation {
+  to {
+    border: 2px solid #f1c232
+  }
+}
+
+/** 遊戲結束時的樣式 **/
+.completed {
+  position: absolute;
+  z-index: 999;
+  top: 33vh;
+  background-color: RGBA(232, 246, 254, 0.8);
+  width: 100vw;
+  padding: 50px 0;
+}
+
+/* > 這個符號看起來有加沒加似乎都是一樣意思 */
+.completed > p {
+  font-size: 1.5em;
+  color: black;
+  text-align: center;
+  margin: 0;
+}
+
+.completed > p:first-child {
+  font-size: 3em;
+  font-weight: 700;
+  color: #758d9a;
+}
