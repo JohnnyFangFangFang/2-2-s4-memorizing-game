@@ -17,14 +17,31 @@ const Symbols = [
   "https://assets-lighthouse.alphacamp.co/uploads/image/file/17988/__.png", // 梅花
 ];
 
-// MVC的View /////////////////////////////////////////////////////////////////////////////////////
+// MVC 的 Model /////////////////////////////////////////////////////////////////////////////////////
+const model = {
+  revealedCards: [],
+
+  // 看翻開的兩張牌是否相同
+  isRevealedCardsMatched() {
+    return (
+      this.revealedCards[0].dataset.index % 13 ===
+      this.revealedCards[1].dataset.index % 13
+    );
+  },
+
+  score: 0,
+
+  triedTimes: 0,
+};
+
+// MVC 的 View /////////////////////////////////////////////////////////////////////////////////////
 const view = {
-  // 渲染撲克牌
+  // 渲染撲克牌（先給個卡片框架）
   getCardElement(index) {
     return `<div data-index='${index}' class="card back"></div>`;
   },
 
-  // 渲染撲克牌數字與花色
+  // 渲染撲克牌數字與花色（再給卡片正面內容，這邊是等卡片被翻到才會呼叫並根據 index 來執行渲染）
   getCardContent(index) {
     const number = this.transformNumber((index % 13) + 1);
     const symbol = Symbols[Math.floor(index / 13)];
@@ -52,7 +69,7 @@ const view = {
     }
   },
 
-  // 選取DOM並更改HTML內容
+  // 選取DOM並更改HTML內容，把所有卡片渲染出來
   displayCards(indexes) {
     const rootElement = document.querySelector("#cards");
     rootElement.innerHTML = indexes
@@ -60,6 +77,7 @@ const view = {
       .join("");
   },
 
+  // 翻牌，包含從背面翻到正面，以及從正面翻回去
   flipCards(...cards) {
     cards.map((card) => {
       if (card.classList.contains("back")) {
@@ -68,7 +86,8 @@ const view = {
         return;
       }
 
-      // 若為正面則翻回背面，且清空內容因為牌背不會有數字與花色
+      // 當 resetCards 被呼叫時，flipCards 也會被呼叫，此時功能就是將已翻開的牌蓋回去
+      // 正面翻回背面且清空內容，因為牌背不會有數字與花色
       card.classList.add("back");
       card.innerHTML = null;
     });
@@ -118,28 +137,11 @@ const view = {
       <p>You've tried: ${model.triedTimes} times</p>
     `;
     const header = document.querySelector("#header");
-    header.before(div);
+    header.before(div); // 就在 header 這個元素前面插入 div
   },
 };
 
-// MVC的Model /////////////////////////////////////////////////////////////////////////////////////
-const model = {
-  revealedCards: [],
-
-  // 看翻開的兩張牌是否相同
-  isRevealedCardsMatched() {
-    return (
-      this.revealedCards[0].dataset.index % 13 ===
-      this.revealedCards[1].dataset.index % 13
-    );
-  },
-
-  score: 0,
-
-  triedTimes: 0,
-};
-
-// MVC的Controller /////////////////////////////////////////////////////////////////////////////////////
+// MVC 的 Controller /////////////////////////////////////////////////////////////////////////////////////
 const controller = {
   currentState: GAME_STATE.FirstCardAwaits,
 
@@ -153,6 +155,8 @@ const controller = {
       return;
     }
 
+    // 依 switch 括號內變數的值執行不同程式，例如，若為 FirstCardAwaits 則執行該區塊程式
+    // 若為 SecondCardAwaits 則執行這邊的程式碼
     switch (this.currentState) {
       case GAME_STATE.FirstCardAwaits:
         view.flipCards(card);
@@ -179,6 +183,7 @@ const controller = {
             return;
           }
 
+          // 配對成功後若沒觸發遊戲結束則將狀態改回 FirstCardAwaits
           this.currentState = GAME_STATE.FirstCardAwaits;
         } else {
           // 配對失敗
@@ -195,10 +200,12 @@ const controller = {
     }
   },
 
+  // 把牌蓋回去、清空已翻開的卡片區資料、將狀態改回 FirstCardAwaits
   resetCards() {
     view.flipCards(...model.revealedCards);
     model.revealedCards = [];
-    // 下面這邊要小心，如果寫this會有問題，因為setTimeout呼叫它時這邊的this會變成是指setTimeout
+    // 下面這邊要小心，如果 controller 寫成 this 會有問題
+    // 因為 setTimeout() 呼叫 resetCards() 時這邊的 this 會變成是指 setTimeout()
     controller.currentState = GAME_STATE.FirstCardAwaits;
   },
 };
@@ -220,7 +227,7 @@ const utility = {
 
 controller.generateCards();
 
-// 翻牌
+// 為每張牌設置事件監聽器，點擊卡片就呼叫 dispatchCardAction 依狀態決定後續動作
 document.querySelectorAll(".card").forEach((card) => {
   card.addEventListener("click", (event) => {
     controller.dispatchCardAction(card);
